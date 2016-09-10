@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Apartment Hunter</title>
+    <meta name="viewport" content="initial-scale=1.0">
+    <meta charset="utf-8">
+    <style>
+      html, body {
+        height: 500px;
+        margin: 0;
+        padding: 0;
+        float: center;
+        font-family: sans-serif;
+      }
+      #headerText {
+        width: 50%;
+        margin: 0 auto;
+        text-align: left;
+      }
+      #titleheaderword {
+        width: 50%;
+        margin: 0 auto;
+        text-align: center;
+      }
+      #formDiv {
+        width: 50%;
+        margin: 0 auto;
+        text-align: center;
+      }
+      #inputTable {
+        width: 70%;
+        margin: 0 auto;
+        text-align: right;
+      }
+      #map {
+        height: 700px;
+        width: 100%;
+        float: center;
+      }
+    </style>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.3/jquery.min.js"></script>
+  </head>
+  <body>
+<!--     <body onload="getLocation();"> -->    
+    <br>
+    <div id='headerText'>
+    <h1 text-align=center id=titleheaderword>Apartment Hunter</h1>
+    <ul>
+      <li>Move and resize the rectangle to the area you want to search.</li> </li>
+    <li>Name the area, and click the "Save Area" button. </li>
+    <li>Copy and paste the output text into the locations.config file</li> 
+    <li>You can create mulitiple areas with different names, or use the same name for mulitiple rectangles so that you can cover non-rectangular areas. The Area Name will be used as a label in the emails.</li>
+    </ul>
+    </div>
+    <div id="formDiv">
+      <form action="{% url 'saveMapCoords'  %}" method="post" id="saveCoordsForm">
+      <!-- commented out for non Django use -->
+      <!-- {% csrf_token %} -->
+      <input name='minLat' type='hidden' id='minLatHidden'>
+      <input name='maxLat' type='hidden' id='maxLatHidden'>
+      <input name='minLng' type='hidden' id='minLngHidden'>
+      <input name='maxLng' type='hidden' id='maxLngHidden'>
+      <table id="inputTable">
+        <!-- <tr>
+          <td>Email:</td>
+          <td><input name= 'email' type="text" id='emailInput'></td>
+        </tr>
+        <tr>
+          <td>Craigslist Region:</td>
+          <td><input name= 'clRegion' type="text" id='clRegionInput'></td>
+        </tr> -->
+        <tr>
+          <td>Area Name:</td>
+          <td><input name= 'areaName' type="text" id='areaNameInput' size=33></td>
+        </tr>
+        <tr>
+          <td>Config File Output:</td>
+          <td><textarea name='areaName' type="textarea" id='configFileOutput' cols=35 rows=7 ></textarea></td>
+        </tr>
+      </table>
+      <br>
+      <input type='submit' value="Save Area">
+      </form>
+    </div>
+<!--     <div "addNewRectangleDiv">
+      <p><button onclick="addNewRectangle()">New Area</button></p>
+    </div> -->
+    <br>
+    <div id="map"></div>
+
+
+    <script>
+
+// https://developers.google.com/maps/documentation/javascript/examples/rectangle-event
+function initMap() {
+  var map = new google.maps.Map(document.getElementById('map'), {
+    center: {lat: 49.2827, lng: -123.1207},
+    zoom: 13
+  });
+
+  map.setCenter(new google.maps.LatLng(49.281258, -123.125194));
+
+  rectangle = new google.maps.Rectangle({
+      strokeColor: '#003399',
+      strokeOpacity: 0.65,
+      strokeWeight: 2,
+      fillColor: '#3366CC',
+      fillOpacity: 0.3,
+      map: map,
+      editable: true,
+      draggable: true,
+      bounds: new google.maps.LatLngBounds(
+          new google.maps.LatLng(49.27359287285868, -123.14269249755858),
+          new google.maps.LatLng(49.290649162057235, -123.10927773022462))
+    });
+
+}
+
+// form handler ------------------------------------------------------
+$("#saveCoordsForm").submit(function(event) {
+
+    event.preventDefault();
+
+    minLatHidden.value = rectangle.getBounds().getSouthWest().lat()
+    maxLatHidden.value = rectangle.getBounds().getNorthEast().lat()
+    minLngHidden.value = rectangle.getBounds().getSouthWest().lng()
+    maxLngHidden.value = rectangle.getBounds().getNorthEast().lng()
+
+    /* get some values from elements on the page: */
+    var $form = $(this),
+        minLatVar = $form.find('input[name="minLat"]').val(),
+        maxLatVar = $form.find('input[name="maxLat"]').val(),
+        minLngVar = $form.find('input[name="minLng"]').val(),
+        maxLngVar = $form.find('input[name="maxLng"]').val(),
+        // emailInputVar = $form.find('input[name="email"]').val(),
+        // clRegionInputVar = $form.find('input[name="clRegion"]').val(),
+        areaNameVar = $form.find('input[name="areaName"]').val(),
+        url = $form.attr('action');
+
+    configString = "[".concat(areaNameVar, "]\n\nmin_lat=", minLatVar, "\nmax_lat=", maxLatVar, "\nmin_long=", minLngVar, "\nmax_long=", maxLngVar, "\n\n")
+
+    document.getElementById("configFileOutput").value = configString;
+
+});
+
+    </script>
+    <script src="https://maps.googleapis.com/maps/api/js?signed_in=true&callback=initMap"
+        async defer>
+    </script>
+  </body>
+</html>
